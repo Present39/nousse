@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOUSSE - Journey Through Innovation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+            background: #0a0f0a;
+        }
+
+        /* FOREST JOURNEY CONTAINER */
+        .forest-journey {
+            position: relative;
+            width: 100%;
+            min-height: 500vh; /* Extra lang voor scroll journey */
+        }
+
+        /* PARALLAX LAYERS - VERSCHILLENDE SNELHEDEN */
+        .forest-layer {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            background-size: cover;
+            background-position: center;
+            will-change: transform;
+        }
+
+        /* LAYER 1: Verre achtergrond - langzaam */
+        .layer-far {
+            background: linear-gradient(to bottom, #1a2f1a, #0d1a0d);
+            z-index: 1;
+        }
+
+        /* LAYER 2: Bomen achter - medium */
+        .layer-trees-back {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23000" opacity="0.3" width="100" height="800" x="100"/><rect fill="%23000" opacity="0.3" width="120" height="800" x="300"/><rect fill="%23000" opacity="0.3" width="80" height="800" x="500"/></svg>');
+            z-index: 2;
+            opacity: 0.6;
+        }
+
+        /* LAYER 3: Hoofdbos */
+        .layer-main-forest {
+            background-image: url('forest.jpg');
+            z-index: 3;
+            filter: brightness(0.4);
+        }
+
+        /* LAYER 4: Voorgrond bomen - snel */
+        .layer-trees-front {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23000" opacity="0.7" width="150" height="800" x="-50"/><rect fill="%23000" opacity="0.7" width="180" height="800" x="1100"/></svg>');
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* HET PAD - volgt je scroll */
+        .forest-path {
+            position: absolute;
+            width: 100%;
+            height: 500vh;
+            z-index: 5;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(255, 255, 255, 0.02) 20%,
+                rgba(255, 255, 255, 0.05) 40%,
+                rgba(255, 255, 255, 0.1) 60%,
+                rgba(255, 255, 255, 0.2) 80%,
+                rgba(255, 255, 255, 0.3) 100%
+            );
+        }
+
+        /* LICHTSTRALEN - worden sterker tijdens scroll */
+        .light-rays {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 6;
+            opacity: 0;
+            transition: opacity 2s;
+            background: radial-gradient(
+                ellipse at center top,
+                rgba(255, 251, 200, 0.3) 0%,
+                transparent 70%
+            );
+            pointer-events: none;
+        }
+
+        /* CONTENT CLEARINGS - waar content verschijnt */
+        .forest-clearing {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+        }
+
+        .forest-clearing.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* EERSTE CLEARING - NOUSSE INTRO */
+        .clearing-intro {
+            margin-top: 100vh;
+        }
+
+        .intro-content {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(0, 0, 0, 0.8) 0%,
+                transparent 70%
+            );
+        }
+
+        .intro-content h1 {
+            font-size: clamp(60px, 10vw, 120px);
+            font-weight: 100;
+            letter-spacing: 12px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 
+                2px 2px 10px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 2s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* TWEEDE CLEARING - AI SOLUTIONS */
+        .clearing-solutions {
+            margin-top: 150vh;
+        }
+
+        .solutions-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 80px;
+            max-width: 1200px;
+            border-radius: 20px;
+            color: #1a1a1a;
+        }
+
+        /* DERDE CLEARING - VOOR WIE */
+        .clearing-audience {
+            margin-top: 150vh;
+        }
+
+        /* VIERDE CLEARING - CONTACT */
+        .clearing-contact {
+            margin-top: 150vh;
+            margin-bottom: 100vh;
+        }
+
+        /* NAVIGATIE DIE MEEREIST */
+        .forest-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .forest-nav.visible {
+            opacity: 1;
+        }
+
+        .forest-nav a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .forest-nav a:hover,
+        .forest-nav a.active {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        /* SCROLL INDICATOR */
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            color: white;
+            font-size: 14px;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* PROGRESS PAD INDICATOR */
+        .path-progress {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            border-radius: 3px;
+        }
+
+        .path-progress-fill {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 3px;
+            transition: height 0.3s;
+        }
+
+        /* AMBIENT PARTICLES */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 7;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="forest-journey">
+    <!-- PARALLAX LAYERS -->
+    <div class="forest-layer layer-far" data-speed="0.2"></div>
+    <div class="forest-layer layer-trees-back" data-speed="0.5"></div>
+    <div class="forest-layer layer-main-forest" data-speed="0.8"></div>
+    <div class="forest-layer layer-trees-front" data-speed="1.5"></div>
+    
+    <!-- LICHT DAT STERKER WORDT -->
+    <div class="light-rays"></div>
+    
+    <!-- HET PAD -->
+    <div class="forest-path"></div>
+    
+    <!-- PARTICLES -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- NAVIGATIE -->
+    <nav class="forest-nav" id="forestNav">
+        <a href="#intro" class="active">Start</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#audience">Voor Wie</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    
+    <!-- SCROLL HINT -->
+    <div class="scroll-hint">SCROLL OM TE WANDELEN</div>
+    
+    <!-- PATH PROGRESS -->
+    <div class="path-progress">
+        <div class="path-progress-fill" id="progressFill"></div>
+    </div>
+    
+    <!-- CLEARING 1: INTRO -->
+    <div class="forest-clearing clearing-intro" id="intro">
+        <div class="intro-content">
+            <h1>NOUSSE</h1>
+            <p style="font-size: 24px; margin-bottom: 20px;">
+                Tech Toegankelijk. Voor Iedereen. Voor Altijd.
+            </p>
+            <p style="font-size: 18px; opacity: 0.8;">
+                Volg het pad naar innovatie...
+            </p>
+        </div>
+    </div>
+    
+    <!-- CLEARING 2: SOLUTIONS -->
+    <div class="forest-clearing clearing-solutions" id="solutions">
+        <div class="solutions-content">
+            <h2 style="font-size: 48px; margin-bottom: 40px;">AI Solutions</h2>
+            <p>Hier verschijnen onze oplossingen terwijl je verder wandelt...</p>
+        </div>
+    </div>
+    
+    <!-- CLEARING 3: VOOR WIE -->
+    <div class="forest-clearing clearing-audience" id="audience">
+        <div class="solutions-content">
+            <h2 style="font-size: 48px; margin-bottom: 40px;">Voor Wie</h2>
+            <p>Van 8 tot 88 jaar...</p>
+        </div>
+    </div>
+    
+    <!-- CLEARING 4: CONTACT -->
+    <div class="forest-clearing clearing-contact" id="contact">
+        <div class="solutions-content">
+            <h2 style="font-size: 48px; margin-bottom: 40px;">Contact</h2>
+            <p>Het einde van het pad, het begin van uw journey...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// FOREST WALK EXPERIENCE
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const scrollProgress = scrolled / maxScroll;
+    
+    // PARALLAX EFFECT - verschillende snelheden
+    document.querySelectorAll('.forest-layer').forEach(layer => {
+        const speed = layer.dataset.speed || 1;
+        const yPos = -(scrolled * speed / 10);
+        layer.style.transform = `translateY(${yPos}px)`;
+    });
+    
+    // LICHT WORDT STERKER
+    const lightRays = document.querySelector('.light-rays');
+    lightRays.style.opacity = scrollProgress;
+    
+    // FOREST WORDT LICHTER
+    const mainForest = document.querySelector('.layer-main-forest');
+    mainForest.style.filter = `brightness(${0.4 + scrollProgress * 0.6})`;
+    
+    // CLEARINGS VERSCHIJNEN
+    document.querySelectorAll('.forest-clearing').forEach(clearing => {
+        const rect = clearing.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.8) {
+            clearing.classList.add('visible');
+        }
+    });
+    
+    // UPDATE PROGRESS
+    const progressFill = document.getElementById('progressFill');
+    progressFill.style.height = `${scrollProgress * 100}%`;
+    
+    // SHOW NAV NA EERSTE SCROLL
+    if (scrolled > 100) {
+        document.getElementById('forestNav').classList.add('visible');
+    }
+    
+    // HIDE SCROLL HINT
+    if (scrolled > 50) {
+        document.querySelector('.scroll-hint').style.opacity = '0';
+    }
+});
+
+// CREATE PARTICLES
+function createParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        container.appendChild(particle);
+    }
+}
+
+// SMOOTH SCROLL TO SECTIONS
+document.querySelectorAll('.forest-nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+
+// INIT
+createParticles();
+</script>
+
+</body>
+</html>
